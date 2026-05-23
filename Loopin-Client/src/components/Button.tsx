@@ -10,7 +10,7 @@ const sizes = {
 
 export default function Button({text, size}:ButtonProps){
     return (
-        <div className={`bg-white text-black rounded-lg flex items-center justify-center font-medium ${sizes[size]} `}>
+        <div className={`bg-white text-black rounded-lg flex items-center justify-center cursor-pointer active:scale-97 font-medium ${sizes[size]} `}>
             {text}
         </div>
     )
