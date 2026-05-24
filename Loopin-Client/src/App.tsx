@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import ChatRoom from "./pages/ChatRoom";
 import LandingPage from "./pages/LandingPage";
 
@@ -6,12 +6,14 @@ import LandingPage from "./pages/LandingPage";
 
 export default function App() {
     const socketRef = useRef<WebSocket | null>(null)
+    const [isConnected, setIsConnected] = useState(false)
 
     useEffect(()=>{
       const socket = new WebSocket("ws://localhost:8080")
       socketRef.current = socket
       socket.onopen=()=>{
           console.log("workss")
+          setIsConnected(true)
       }
 
       socket.onmessage=(event)=>{
@@ -26,7 +28,7 @@ export default function App() {
   return (
     <>
       <LandingPage socket={socketRef}/>
-      <ChatRoom socket={socketRef}/>
+      <ChatRoom socket={socketRef} isConnected={isConnected}/>
     </>
   )
 }

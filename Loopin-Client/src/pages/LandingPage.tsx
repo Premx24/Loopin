@@ -1,7 +1,10 @@
+import { useRef } from "react";
 import Button from "../components/Button";
 import ChatIcon from "../icons/ChatIcon";
 
-export default function LandingPage() {
+// @ts-ignore
+export default function LandingPage({socket}) {
+  const inputRef = useRef<HTMLInputElement | null>(null)
 
   return (
     <>
@@ -13,12 +16,27 @@ export default function LandingPage() {
       <div className="text-lg text-slate-400 pl-10">
         Temporary room that expires after both users exit
       </div>
-      <div className="flex items-center justify-center pt-8">
+      <div className="flex items-center justify-center pt-8" onClick={()=>{
+        socket.current?.send(JSON.stringify({
+              "type": "create",
+              "RoomId": "abd",
+            }
+          ))
+          console.log("Room created in client side")
+      }}>
         <Button text="Create New Room" size="lg"/>
       </div>
       <div className="flex m-10">
-        <input type="text" placeholder="Enter Room Code" className="text-white border border-gray-300 rounded-md text-center pr-40 mr-5"/>
-        <Button text="Join Room" size="sm"/>
+        <input type="text" ref={inputRef} placeholder="Enter Room Code" className="text-white border border-gray-300 rounded-md text-center pr-40 mr-5"/>
+        <div onClick={()=>{
+          socket.current.send(JSON.stringify({
+              "type": "join",
+              "RoomId": inputRef.current?.value,
+            }
+          ))
+        }}>
+          <Button text="Join Room" size="sm"/>
+        </div>
       </div>
       </div>
     </div>

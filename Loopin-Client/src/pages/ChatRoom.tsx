@@ -1,8 +1,36 @@
+import { useEffect, useRef, useState } from "react";
 import Button from "../components/Button";
-import ChatMessage from "../components/ChatMessage";
 import ChatDoubleIcon from "../icons/ChatDoubleIcon";
+import ChatMessage from "../components/ChatMessage";
 
-export default function ChatRoom(){
+interface chatProp {
+    chat: string
+}
+
+// @ts-ignore
+export default function ChatRoom({socket, isConnected}){
+    const chatRef = useRef<HTMLInputElement | null>(null)
+    //  dont keep any in ts, it's bad!! change it later!
+    const [message, setMessage] = useState<chatProp[]>([])
+
+    useEffect(()=>{
+
+        if(!socket.current) return
+
+        // @ts-ignore
+        socket.current.onmessage=(event)=>{
+            setMessage(prev => [
+                ...prev,
+                {
+                    chat: event.data,
+                }
+            ])
+            console.log("huh")
+        }
+
+        
+    }, [isConnected])
+
     return (
         <>
         <div className="flex flex-col min-h-screen bg-black justify-center items-center pb-50 text-white">
@@ -13,12 +41,26 @@ export default function ChatRoom(){
                 <div className="text-lg text-neutral-400 px-10">
                     Temporary room that expires after both users exit
                 </div>
-                <div className="bg-neutral-800 text-neutral-300 p-3 mx-10 my-7">
+                <div className="bg-neutral-800 text-neutral-300 p-3 mx-10 my-7 rounded-md">
                     Room Code: Red
                 </div>
+                <div className="flex flex-col gap-3 px-10 overflow-y-auto">
+                    {message.map(x => {
+                        return <ChatMessage message={x.chat}/>
+                    })}
+                </div>
                 <div className="flex pl-10 mt-auto">
-                    <input type="text" placeholder=" Type a message..." className="text-white border border-gray-300 rounded-md text-center w-200 mr-5 text-left"/>
-                    <Button text="send" size="sm"/> 
+                    <input type="text" ref={chatRef} placeholder=" Type a message..." className="text-white border border-gray-300 rounded-md text-center w-200 mr-5 text-left"/>
+                    <div onClick={()=>{
+                        socket.current?.send(JSON.stringify({
+                            "type": "chat",
+                            "RoomId": "abd",
+                            "message": chatRef.current?.value
+                            }
+                        ))
+                    }}>
+                        <Button text="send" size="sm"/>
+                    </div>
                 </div>
             </div>
         </div>
