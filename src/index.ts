@@ -13,7 +13,8 @@ const chatRooms: chatInterface = {
 // Message body - {
 //     "type": "join"/"create"/"chat",
 //     "RoomId": "",
-//     "message": ""
+//     "message": "",
+//     "isOwner": true/false
 // }
 
 
@@ -37,8 +38,13 @@ ws.on("connection", function(socket){
         }
         // User wants to chat then first we check if that user is part of that room or not and if yes then forward that chat to everyone in that room
         else if(parsedMsg.type == "chat" && chatRooms[parsedMsg.RoomId]?.includes(socket)){
-            chatRooms[parsedMsg.RoomId]?.forEach(socket => {
-                socket.send(JSON.stringify(parsedMsg))
+            chatRooms[parsedMsg.RoomId]?.forEach(sockets => {
+
+                // This returns true if sockets equals socket else false
+                parsedMsg.isOwner = socket==sockets
+
+                console.log(JSON.stringify(parsedMsg))
+                sockets.send(JSON.stringify(parsedMsg))
             })
         }
         // For every-other case, we just send a message - "Error Occured"

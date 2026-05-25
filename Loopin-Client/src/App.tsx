@@ -9,7 +9,7 @@ export default function App() {
     const socketRef = useRef<WebSocket | null>(null)
     const [isConnected, setIsConnected] = useState(false)
     const [inChatRoom, setChatRoom] = useState(false)
-    const [roomCode] = useState(()=> generateCode())
+    const [roomCode, setRoomCode] = useState(generateCode())
 
     useEffect(()=>{
       const socket = new WebSocket("ws://localhost:8080")
@@ -31,7 +31,7 @@ export default function App() {
   return (
     <>
       {
-        !inChatRoom ? <LandingPage socket={socketRef} setChatRoom={setChatRoom} roomCode={roomCode}/> : <ChatRoom socket={socketRef} isConnected={isConnected} roomCode={roomCode}/>
+        !inChatRoom ? <LandingPage socket={socketRef} setChatRoom={setChatRoom} setRoomCode={setRoomCode} roomCode={roomCode}/> : <ChatRoom socket={socketRef} isConnected={isConnected} roomCode={roomCode}/>
       }
     </>
   )

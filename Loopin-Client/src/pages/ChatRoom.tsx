@@ -4,7 +4,8 @@ import ChatDoubleIcon from "../icons/ChatDoubleIcon";
 import ChatMessage from "../components/ChatMessage";
 
 interface chatProp {
-    chat: string
+    chat: string,
+    isOwner: boolean
 }
 
 // @ts-ignore
@@ -12,7 +13,7 @@ export default function ChatRoom({socket, isConnected, roomCode}){
     const chatRef = useRef<HTMLInputElement | null>(null)
     //  dont keep any in ts, it's bad!! change it later!
     const [message, setMessage] = useState<chatProp[]>([])
-
+    console.log(roomCode)
     useEffect(()=>{
 
         // Now event.data receives entire backend req body
@@ -25,6 +26,7 @@ export default function ChatRoom({socket, isConnected, roomCode}){
                 ...prev,
                 {
                     chat: data.message,
+                    isOwner: data.isOwner
                 }
             ])
             console.log(event)
@@ -46,9 +48,9 @@ export default function ChatRoom({socket, isConnected, roomCode}){
                 <div className="bg-neutral-800 text-neutral-300 p-3 mx-10 my-7 rounded-md">
                     {`Room Code: ${roomCode}`} 
                 </div>
-                <div className="flex flex-col gap-3 px-10 overflow-y-auto">
-                    {message.map(x => {
-                        return <ChatMessage message={x.chat}/>
+                <div className="flex flex-col gap-3 px-10 overflow-y-auto justify-end">
+                    {message.map((x, index) => {
+                        return <ChatMessage key={index} message={x.chat} isOwner={x.isOwner} />
                     })}
                 </div>
                 <div className="flex pl-10 mt-auto">
@@ -57,7 +59,8 @@ export default function ChatRoom({socket, isConnected, roomCode}){
                         socket.current?.send(JSON.stringify({
                             "type": "chat",
                             "RoomId": roomCode,
-                            "message": chatRef.current?.value
+                            "message": chatRef.current?.value,
+                            "isOwner": false
                             }
                         ))
                         if(chatRef.current){

@@ -1,10 +1,10 @@
-import { useRef, useState } from "react";
+import { useRef, useState} from "react";
 import Button from "../components/Button";
 import ChatIcon from "../icons/ChatIcon";
 import RoomCode from "../components/RoomCode";
 
 // @ts-ignore
-export default function LandingPage({socket, setChatRoom, roomCode}) {
+export default function LandingPage({socket, setChatRoom, setRoomCode, roomCode}) {
   const inputRef = useRef<HTMLInputElement | null>(null)
   const [roomCreated, setRoom] = useState(false)
 
@@ -32,9 +32,12 @@ export default function LandingPage({socket, setChatRoom, roomCode}) {
       <div className="flex m-10">
         <input type="text" ref={inputRef} placeholder="Enter Room Code" className="text-white border border-gray-300 rounded-md text-center pr-40 mr-5"/>
         <div onClick={()=>{
-          socket.current.send(JSON.stringify({
+          const enteredRoom = inputRef.current?.value?.trim()
+          if (!enteredRoom) return
+          setRoomCode(enteredRoom)
+          socket.current?.send(JSON.stringify({
               "type": "join",
-              "RoomId": inputRef.current?.value,
+              "RoomId": enteredRoom,
             }
           ))
           setChatRoom(true)
