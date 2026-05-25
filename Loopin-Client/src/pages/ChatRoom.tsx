@@ -52,7 +52,7 @@ export default function ChatRoom({socket, isConnected, roomCode}){
                     })}
                 </div>
                 <div className="flex pl-10 mt-auto">
-                    <input type="text" ref={chatRef} placeholder=" Type a message..." className="text-white border border-gray-300 rounded-md text-center w-200 mr-5 text-left"/>
+                    <input type="text" ref={chatRef} placeholder=" Type a message..." className="text-white border border-gray-300 rounded-md text-center w-200 mr-5 pl-5 text-left"/>
                     <div onClick={()=>{
                         socket.current?.send(JSON.stringify({
                             "type": "chat",
@@ -60,6 +60,9 @@ export default function ChatRoom({socket, isConnected, roomCode}){
                             "message": chatRef.current?.value
                             }
                         ))
+                        if(chatRef.current){
+                            chatRef.current.value = ""
+                        }
                     }}>
                         <Button text="send" size="sm"/>
                     </div>
