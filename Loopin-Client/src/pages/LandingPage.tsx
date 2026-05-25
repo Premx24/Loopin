@@ -1,10 +1,12 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import Button from "../components/Button";
 import ChatIcon from "../icons/ChatIcon";
+import RoomCode from "../components/RoomCode";
 
 // @ts-ignore
-export default function LandingPage({socket}) {
+export default function LandingPage({socket, setChatRoom, roomCode}) {
   const inputRef = useRef<HTMLInputElement | null>(null)
+  const [roomCreated, setRoom] = useState(false)
 
   return (
     <>
@@ -19,10 +21,11 @@ export default function LandingPage({socket}) {
       <div className="flex items-center justify-center pt-8" onClick={()=>{
         socket.current?.send(JSON.stringify({
               "type": "create",
-              "RoomId": "abd",
+              "RoomId": roomCode,
             }
           ))
           console.log("Room created in client side")
+          setRoom(true)
       }}>
         <Button text="Create New Room" size="lg"/>
       </div>
@@ -34,10 +37,18 @@ export default function LandingPage({socket}) {
               "RoomId": inputRef.current?.value,
             }
           ))
+          setChatRoom(true)
         }}>
           <Button text="Join Room" size="sm"/>
         </div>
       </div>
+      {
+        roomCreated && (
+          <div className="ml-10">
+            <RoomCode message={`Room Code: ${roomCode}`}/>
+          </div>
+        )
+      }
       </div>
     </div>
     </>

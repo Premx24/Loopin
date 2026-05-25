@@ -1,12 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import ChatRoom from "./pages/ChatRoom";
 import LandingPage from "./pages/LandingPage";
+import { generateCode } from "./utils";
 
 // Later implement useSocket or React Context
 
 export default function App() {
     const socketRef = useRef<WebSocket | null>(null)
     const [isConnected, setIsConnected] = useState(false)
+    const [inChatRoom, setChatRoom] = useState(false)
+    const [roomCode] = useState(()=> generateCode())
 
     useEffect(()=>{
       const socket = new WebSocket("ws://localhost:8080")
@@ -27,8 +30,9 @@ export default function App() {
 
   return (
     <>
-      <LandingPage socket={socketRef}/>
-      <ChatRoom socket={socketRef} isConnected={isConnected}/>
+      {
+        !inChatRoom ? <LandingPage socket={socketRef} setChatRoom={setChatRoom} roomCode={roomCode}/> : <ChatRoom socket={socketRef} isConnected={isConnected} roomCode={roomCode}/>
+      }
     </>
   )
 }

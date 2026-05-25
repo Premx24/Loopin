@@ -21,6 +21,7 @@ ws.on("connection", function(socket){
     
     socket.on("message", (msg)=>{
 
+        console.log(msg.toString())
         const parsedMsg = JSON.parse(msg.toString())
         console.log("Parsed Message: " + parsedMsg)
 
@@ -32,13 +33,12 @@ ws.on("connection", function(socket){
         // User creates a room - loophole: If that room already exists then user is directly added to that room, will change that later
         else if(parsedMsg.type == "create"){
             !chatRooms[parsedMsg.RoomId] ? chatRooms[parsedMsg.RoomId]=[] : console.log("Room Already Exists")
-            chatRooms[parsedMsg.RoomId]?.push(socket)
             console.log(chatRooms[parsedMsg.RoomId]?.length)
         }
         // User wants to chat then first we check if that user is part of that room or not and if yes then forward that chat to everyone in that room
         else if(parsedMsg.type == "chat" && chatRooms[parsedMsg.RoomId]?.includes(socket)){
             chatRooms[parsedMsg.RoomId]?.forEach(socket => {
-                socket.send(parsedMsg.message)
+                socket.send(JSON.stringify(parsedMsg))
             })
         }
         // For every-other case, we just send a message - "Error Occured"

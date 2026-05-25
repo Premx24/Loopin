@@ -8,24 +8,26 @@ interface chatProp {
 }
 
 // @ts-ignore
-export default function ChatRoom({socket, isConnected}){
+export default function ChatRoom({socket, isConnected, roomCode}){
     const chatRef = useRef<HTMLInputElement | null>(null)
     //  dont keep any in ts, it's bad!! change it later!
     const [message, setMessage] = useState<chatProp[]>([])
 
     useEffect(()=>{
 
+        // Now event.data receives entire backend req body
         if(!socket.current) return
 
         // @ts-ignore
         socket.current.onmessage=(event)=>{
+            const data = JSON.parse(event.data)
             setMessage(prev => [
                 ...prev,
                 {
-                    chat: event.data,
+                    chat: data.message,
                 }
             ])
-            console.log("huh")
+            console.log(event)
         }
 
         
@@ -42,7 +44,7 @@ export default function ChatRoom({socket, isConnected}){
                     Temporary room that expires after both users exit
                 </div>
                 <div className="bg-neutral-800 text-neutral-300 p-3 mx-10 my-7 rounded-md">
-                    Room Code: Red
+                    {`Room Code: ${roomCode}`} 
                 </div>
                 <div className="flex flex-col gap-3 px-10 overflow-y-auto">
                     {message.map(x => {
@@ -54,7 +56,7 @@ export default function ChatRoom({socket, isConnected}){
                     <div onClick={()=>{
                         socket.current?.send(JSON.stringify({
                             "type": "chat",
-                            "RoomId": "abd",
+                            "RoomId": roomCode,
                             "message": chatRef.current?.value
                             }
                         ))
