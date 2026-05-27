@@ -48,12 +48,12 @@ export default function ChatRoom({socket, isConnected, roomCode}){
                 <div className="bg-neutral-800 text-neutral-300 p-3 mx-10 my-7 rounded-md">
                     {`Room Code: ${roomCode}`} 
                 </div>
-                <div className="flex flex-col gap-3 px-10 overflow-y-auto justify-end">
+                <div className="flex flex-col gap-3 px-10 overflow-y-auto flex-1 min-h-0 [scrollbar-width:none] [-ms-overflow-style:none]">
                     {message.map((x, index) => {
                         return <ChatMessage key={index} message={x.chat} isOwner={x.isOwner} />
                     })}
                 </div>
-                <div className="flex pl-10 mt-auto">
+                <div className="flex pl-10 pt-5 mt-auto">
                     <input type="text" ref={chatRef} placeholder=" Type a message..." className="text-white border border-gray-300 rounded-md text-center w-200 mr-5 pl-5 text-left"/>
                     <div onClick={()=>{
                         socket.current?.send(JSON.stringify({
