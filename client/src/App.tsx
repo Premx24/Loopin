@@ -29,7 +29,7 @@ export default function App() {
   return (
     <>
       {
-        !inChatRoom ? <LandingPage socket={socketRef} setChatRoom={setChatRoom} setRoomCode={setRoomCode} roomCode={roomCode}/> : <ChatRoom socket={socketRef} isConnected={isConnected} roomCode={roomCode}/>
+        !inChatRoom ? <LandingPage socket={socketRef} setChatRoom={setChatRoom} setRoomCode={setRoomCode} roomCode={roomCode} isConnected={isConnected}/> : <ChatRoom socket={socketRef} isConnected={isConnected} roomCode={roomCode}/>
       }
     </>
   )

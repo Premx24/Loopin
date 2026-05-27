@@ -1,13 +1,42 @@
-import { useRef, useState} from "react";
+import { useEffect, useRef, useState} from "react";
 import Button from "../components/Button";
 import ChatIcon from "../icons/ChatIcon";
 import RoomCode from "../components/RoomCode";
 import toast, { Toaster } from "react-hot-toast";
 
 // @ts-ignore
-export default function LandingPage({socket, setChatRoom, setRoomCode, roomCode}) {
+// @ts-ignore
+export default function LandingPage({socket, setChatRoom, setRoomCode, roomCode, isConnected}) {
   const inputRef = useRef<HTMLInputElement | null>(null)
   const [roomCreated, setRoom] = useState(false)
+
+// Wrong room code validation
+
+  useEffect(()=>{
+    const ws = socket.current
+    if(!ws) return
+
+    const handler = (event: MessageEvent) => {
+      try{
+        const data = JSON.parse(event.data)
+        console.log(data)
+
+        if(data.type == "error"){
+          toast.error(data.message)
+        }
+        else if(data.type == "join-success"){
+          toast.success("Joined room successfully!")
+          setRoomCode(inputRef.current?.value?.trim())
+          setChatRoom(true)
+        }
+      }catch(err){
+        console.error(err)
+      }
+    }
+
+    ws.addEventListener("message", handler)
+    return ()=> ws.removeEventListener("message", handler)
+  }, [isConnected, socket])
 
   return (
     <>
@@ -41,9 +70,6 @@ export default function LandingPage({socket, setChatRoom, setRoomCode, roomCode}
               "RoomId": enteredRoom,
             }
           ))
-          setRoomCode(enteredRoom)
-          setChatRoom(true)
-          toast.success("Room created successfully!")
         }}>
           <Button text="Join Room" size="sm"/>
         </div>

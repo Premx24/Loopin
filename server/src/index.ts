@@ -28,7 +28,14 @@ ws.on("connection", function(socket){
 
         // User Joins a room and if exists then add it to that room otherwise return Room doesn't exist
         if(parsedMsg.type == "join"){
-            !chatRooms[parsedMsg.RoomId] ? console.log("Room Doesn't Exist") : chatRooms[parsedMsg.RoomId]?.push(socket)
+            !chatRooms[parsedMsg.RoomId] ? socket.send(JSON.stringify({
+                "type": "error",
+                "message": "Room doesn't exist"
+            })) : 
+            socket.send(JSON.stringify({
+                "type": "join-success"
+            }))
+            chatRooms[parsedMsg.RoomId]?.push(socket)
             console.log(chatRooms[parsedMsg.RoomId]?.length)
         } 
         // User creates a room - loophole: If that room already exists then user is directly added to that room, will change that later
