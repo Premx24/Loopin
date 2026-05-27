@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import ChatRoom from "./pages/ChatRoom";
 import LandingPage from "./pages/LandingPage";
 import { generateCode } from "./utils";
+import toast from "react-hot-toast";
 
 // Later implement useSocket or React Context
 
@@ -19,12 +20,9 @@ export default function App() {
           setIsConnected(true)
       }
 
-      socket.onmessage=(event)=>{
-          console.log(event.data)
-      }
 
       socket.onerror=()=>{
-          console.log("erorr occured")
+          console.log(toast.error("Error Occured"))
       }
     },[])
 

@@ -2,6 +2,7 @@ import { useRef, useState} from "react";
 import Button from "../components/Button";
 import ChatIcon from "../icons/ChatIcon";
 import RoomCode from "../components/RoomCode";
+import toast, { Toaster } from "react-hot-toast";
 
 // @ts-ignore
 export default function LandingPage({socket, setChatRoom, setRoomCode, roomCode}) {
@@ -26,6 +27,7 @@ export default function LandingPage({socket, setChatRoom, setRoomCode, roomCode}
           ))
           console.log("Room created in client side")
           setRoom(true)
+          toast.success("Room created successfully!")
       }}>
         <Button text="Create New Room" size="lg"/>
       </div>
@@ -33,14 +35,15 @@ export default function LandingPage({socket, setChatRoom, setRoomCode, roomCode}
         <input type="text" ref={inputRef} placeholder="Enter Room Code" className="text-white border border-gray-300 rounded-md text-center pr-40 mr-5"/>
         <div onClick={()=>{
           const enteredRoom = inputRef.current?.value?.trim()
-          if (!enteredRoom) return
-          setRoomCode(enteredRoom)
+          if (!enteredRoom) return toast.error("Please enter a room code!")
           socket.current?.send(JSON.stringify({
               "type": "join",
               "RoomId": enteredRoom,
             }
           ))
+          setRoomCode(enteredRoom)
           setChatRoom(true)
+          toast.success("Room created successfully!")
         }}>
           <Button text="Join Room" size="sm"/>
         </div>
@@ -54,6 +57,7 @@ export default function LandingPage({socket, setChatRoom, setRoomCode, roomCode}
       }
       </div>
     </div>
+    <Toaster/>
     </>
   )
 }
