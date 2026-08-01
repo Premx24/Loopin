@@ -54,6 +54,13 @@ ws.on("connection", function(socket){
                 sockets.send(JSON.stringify(parsedMsg))
             })
         }
+        else if(["offer","answer","ice-candidate"].includes(parsedMsg.type)){
+            chatRooms[parsedMsg.RoomId]?.forEach((peer)=>{
+                if(peer != socket){
+                    peer.send(JSON.stringify(parsedMsg))
+                }
+            })
+        }
         // For every-other case, we just send a message - "Error Occured"
         else{
             socket.send("Error Occured!")
