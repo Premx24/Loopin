@@ -3,6 +3,7 @@ import Button from "../components/Button";
 import ChatDoubleIcon from "../icons/ChatDoubleIcon";
 import ChatMessage from "../components/ChatMessage";
 import toast, {Toaster} from "react-hot-toast";
+import VideoIcon from "../icons/VideoIcon";
 
 interface chatProp {
     chat: string,
@@ -72,6 +73,10 @@ export default function ChatRoom({socket, isConnected, roomCode}){
                     }}>
                         <Button text="send" size="sm"/>
                     </div>
+                </div>
+                <div>
+                    <video ref={localStreamRef} width={640} height={360} controls/>
+                    <video ref={remoteStreamRef} width={640} height={360} controls/>
                 </div>
             </div>
         </div>
