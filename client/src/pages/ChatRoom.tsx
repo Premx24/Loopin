@@ -12,6 +12,75 @@ interface chatProp {
 
 // @ts-ignore
 export default function ChatRoom({socket, isConnected, roomCode}){
+
+    // Webrtc code
+    const [localStream, setLocalStream] = useState<MediaStream | null>(null)
+    const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null)
+
+    const localStreamRef = useRef<HTMLVideoElement|null>(null)
+    const peerConnectionRef = useRef<RTCPeerConnection|null>(null)
+    const remoteStreamRef = useRef<HTMLVideoElement|null>(null)
+
+    useEffect(()=>{
+
+        peerConnectionRef.current = new RTCPeerConnection({
+            iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+        })
+
+        peerConnectionRef.current!.onicecandidate = (event)=>{
+            if(event.candidate){
+                socket.current?.send(JSON.stringify({
+                    type: "ice-candidate",
+                    RoomId: roomCode,
+                    candidate: event.candidate
+                })
+            )}
+        }
+
+        peerConnectionRef.current!.ontrack=(event)=>{
+            const [stream] = event.streams
+            setRemoteStream(stream)
+            if(remoteStreamRef.current){
+                remoteStreamRef.current.srcObject = stream
+            }
+        }
+
+        const createOffer = async()=>{
+            const offer = await peerConnectionRef.current?.createOffer()
+
+            await peerConnectionRef.current?.setLocalDescription(offer)
+        
+            socket.current?.send(JSON.stringify({
+                type: "offer",
+                RoomId: roomCode,
+                offer: offer,
+                from: "User A"
+            }))
+        }
+
+        const getlocalMedia = async()=>{
+            const localMedia = await navigator.mediaDevices.getUserMedia({
+                video: true,
+                audio: true
+            })
+            setLocalStream(localMedia)
+
+            localMedia?.getTracks().forEach((track)=>{
+                peerConnectionRef.current!.addTrack(track, localMedia)
+            })
+
+            createOffer()
+        }
+        getlocalMedia()
+
+    }, [])
+
+    useEffect(()=>{
+        if(localStreamRef.current && localStream){
+            localStreamRef.current.srcObject = localStream
+        }
+    }, [localStream])
+
     const chatRef = useRef<HTMLInputElement | null>(null)
     //  dont keep any in ts, it's bad!! change it later!
     const [message, setMessage] = useState<chatProp[]>([])
@@ -22,7 +91,7 @@ export default function ChatRoom({socket, isConnected, roomCode}){
         if(!socket.current) return
 
         // @ts-ignore
-        socket.current.onmessage=(event)=>{
+        socket.current.onmessage = async(event)=>{
             const data = JSON.parse(event.data)
             setMessage(prev => [
                 ...prev,
@@ -32,6 +101,33 @@ export default function ChatRoom({socket, isConnected, roomCode}){
                 }
             ])
             console.log(event)
+
+            if(data.type == "offer"){
+                await peerConnectionRef.current?.setRemoteDescription(new RTCSessionDescription(data.offer))
+
+                localStream?.getTracks().forEach((tracks)=>{
+                    peerConnectionRef.current?.addTrack(tracks, localStream)
+                })
+
+                const answer = await peerConnectionRef.current?.createAnswer()
+
+                await peerConnectionRef.current?.setLocalDescription(answer)
+
+                socket.current.send(JSON.stringify({
+                    type: "answer",
+                    RoomId: roomCode,
+                    answer: answer,
+                    from: "User B"
+                }))
+            }
+
+            if(data.type == "answer"){
+                await peerConnectionRef.current?.setRemoteDescription(new RTCSessionDescription(data.answer))
+            }
+
+            if(data.candidate){
+                await peerConnectionRef.current?.addIceCandidate(new RTCIceCandidate(data.candidate))
+            }
         }
 
         
@@ -44,6 +140,9 @@ export default function ChatRoom({socket, isConnected, roomCode}){
             <div className="flex flex-col justify-top border border-gray-600 p-5 rounded-lg m-5 pt-10 w-200 h-250">
                 <div className="flex text-3xl gap-2 left-0 items-center pl-10">
                     <ChatDoubleIcon/> Real Time Chat
+                    <div className="ml-auto mr-10">
+                        <VideoIcon/>
+                    </div>
                 </div>
                 <div className="text-lg text-neutral-400 px-10">
                     Temporary room that expires after both users exit
