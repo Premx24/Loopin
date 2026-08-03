@@ -25,8 +25,23 @@ export default function ChatRoom({socket, isConnected, roomCode}){
 
     useEffect(()=>{
 
+        const stunUrl = import.meta.env.VITE_STUN_URL
+        const turnUrls = (import.meta.env.VITE_TURN_URLS)
+            .split(",")
+            .map((url: string) => url.trim())
+            .filter(Boolean)
+        const turnUsername = import.meta.env.VITE_TURN_USERNAME
+        const turnCredential = import.meta.env.VITE_TURN_CREDENTIAL
+
         peerConnectionRef.current = new RTCPeerConnection({
-            iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+            iceServers: [
+                { urls: [stunUrl] },
+                {
+                    urls: turnUrls,
+                    username: turnUsername,
+                    credential: turnCredential,
+                }
+            ]
         })
 
         peerConnectionRef.current!.onicecandidate = (event)=>{
