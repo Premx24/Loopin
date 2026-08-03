@@ -25,13 +25,14 @@ export default function ChatRoom({socket, isConnected, roomCode}){
 
     useEffect(()=>{
 
-        const stunUrl = import.meta.env.VITE_STUN_URL
-        const turnUrls = (import.meta.env.VITE_TURN_URLS)
+        const stunUrl = import.meta.env.VITE_STUN_URL || "stun:stun.l.google.com:19302"
+        const turnUrlsRaw = import.meta.env.VITE_TURN_URLS || "turn:openrelay.metered.ca:443?transport=tcp,turn:openrelay.metered.ca:443?transport=udp"
+        const turnUrls = turnUrlsRaw
             .split(",")
             .map((url: string) => url.trim())
             .filter(Boolean)
-        const turnUsername = import.meta.env.VITE_TURN_USERNAME
-        const turnCredential = import.meta.env.VITE_TURN_CREDENTIAL
+        const turnUsername = import.meta.env.VITE_TURN_USERNAME || "openrelayproject"
+        const turnCredential = import.meta.env.VITE_TURN_CREDENTIAL || "openrelayproject"
 
         peerConnectionRef.current = new RTCPeerConnection({
             iceServers: [
