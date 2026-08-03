@@ -1,83 +1,46 @@
 # Loopin
 
-Loopin is a minimal real-time temporary chat application built using WebSockets.  
-Users can create private rooms, share a room code, and chat instantly with other users connected to the same room.
-
----
+A minimal real-time chat application built with **WebSockets** and **WebRTC** for instant messaging and peer-to-peer video calls.
 
 ## Features
 
-- Real-time communication using WebSockets
-- Temporary room-based chat architecture
-- Create and join chat rooms using unique room codes
-- Live message broadcasting to connected users
-- Sender and receiver message alignment
-- Reusable React component architecture
-- Room validation before messaging
-- Lightweight and fast real-time communication
-
----
+- Real-time messaging with WebSockets
+- Peer-to-peer video calling using WebRTC
+- Temporary room-based communication
+- Room creation and joining with unique codes
+- Lightweight and responsive interface
 
 ## Tech Stack
 
-### Frontend
+**Frontend**
 - React
 - TypeScript
 - Tailwind CSS
 
-### Backend
+**Backend**
 - Node.js
-- WebSocket (`ws`)
 - TypeScript
-
----
+- ws
 
 ## Project Structure
 
-```bash
+```text
 Loopin/
 ├── client/
 ├── server/
-├── README.md
+└── README.md
 ```
-
----
-
-## How It Works
-
-1. A user creates a room.
-2. A unique room code is generated.
-3. Another user joins using the same room code.
-4. Messages are sent through a WebSocket server.
-5. The server broadcasts messages to all sockets connected to that room.
-
----
-
-## WebSocket Message Structure
-
-```json
-{
-  "type": "chat",
-  "RoomId": "ABCD12",
-  "message": "Hello",
-  "isOwner": false
-}
-```
-
----
 
 ## Getting Started
 
 ### Clone the repository
 
 ```bash
-git clone <your-repo-url>
+git clone <repository-url>
 cd Loopin
 ```
 
----
-
-## Frontend Setup
+### Client
 
 ```bash
 cd client
@@ -85,15 +48,9 @@ npm install
 npm run dev
 ```
 
-Runs on:
+Runs on `http://localhost:5173`
 
-```bash
-http://localhost:5173
-```
-
----
-
-## Backend Setup
+### Server
 
 ```bash
 cd server
@@ -101,16 +58,15 @@ npm install
 npm run dev
 ```
 
-Runs WebSocket server on:
+Runs on `ws://localhost:8080`
 
-```bash
-ws://localhost:8080
-```
+## How It Works
 
----
+1. Create or join a room.
+2. Exchange messages through a WebSocket signaling server.
+3. Start a peer-to-peer video call using WebRTC.
+4. Audio and video are streamed directly between connected peers.
 
-## Purpose
+## Project Goal
 
-This project was built to understand real-time systems and explore how WebSockets work internally compared to traditional HTTP request-response communication.
-
----
+Loopin was built to explore real-time communication by implementing WebSockets for signaling and WebRTC for peer-to-peer media streaming.
