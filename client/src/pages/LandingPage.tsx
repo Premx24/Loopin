@@ -71,12 +71,12 @@ export default function LandingPage({socket, setChatRoom, setRoomCode, roomCode,
             }
           ))
         }}>
-          <Button text="Join Room" size="sm"/>
+          <Button text="Join Room" size="md"/>
         </div>
       </div>
       {
         roomCreated && (
-          <div className="ml-10">
+          <div className="ml-10 mr-10">
             <RoomCode message={`Room Code: ${roomCode}`}/>
           </div>
         )

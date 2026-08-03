@@ -6,8 +6,8 @@ interface chatMessageProps {
 export default function RoomCode({message}:chatMessageProps){
 
     return (
-        <div className="bg-neutral-500 text-black rounded p-3 text-xl w-150 h-15 font-semibold">
-            {message} 
+        <div className="rounded-2xl border border-cyan-400/30 bg-slate-900/80 px-4 py-3 text-base font-semibold text-cyan-200 shadow-lg shadow-cyan-500/10">
+            {message}
         </div>
     )
 }

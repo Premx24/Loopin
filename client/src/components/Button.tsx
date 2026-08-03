@@ -1,11 +1,12 @@
 interface ButtonProps {
     text: string,
-    size: "sm" | "lg"
+    size: "sm" | "lg" | "md"
 }
 
 const sizes = {
     "lg": "w-150 h-18 text-2xl",
-    "sm": "w-60 h-16 text-lg"
+    "md": "w-60 h-16 text-lg",
+    "sm": "w-25 h-12 text-lg"
 }
 
 export default function Button({text, size}:ButtonProps){
