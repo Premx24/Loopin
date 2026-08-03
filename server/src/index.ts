@@ -1,6 +1,12 @@
 import { WebSocketServer, WebSocket } from "ws";
 
-const ws = new WebSocketServer({port:8080})
+const host = process.env.HOST || "0.0.0.0";
+const port = Number(process.env.PORT || 8080);
+
+const ws = new WebSocketServer({
+    host,
+    port
+});
 
 interface chatInterface {
     [RoomId: string]: WebSocket[]
