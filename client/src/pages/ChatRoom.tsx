@@ -20,6 +20,9 @@ export default function ChatRoom({socket, isConnected, roomCode}){
     const [localStream, setLocalStream] = useState<MediaStream | null>(null)
     const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null)
     const [isCalling, setIsCalling] = useState(false)
+    const [isChatOpen, setIsChatOpen] = useState(false)
+    const [isMicOn, setIsMicOn] = useState(false)
+    const [isCameraOn, setIsCameraOn] = useState(false)
 
     const localStreamRef = useRef<HTMLVideoElement|null>(null)
     const peerConnectionRef = useRef<RTCPeerConnection|null>(null)
@@ -129,12 +132,18 @@ export default function ChatRoom({socket, isConnected, roomCode}){
 
         const getlocalMedia = async()=>{
             const localMedia = await navigator.mediaDevices.getUserMedia({
-                video: true,
-                audio: true
+                audio: true,
+                video: isCameraOn
             })
             setLocalStream(localMedia)
 
-            localMedia?.getTracks().forEach((track)=>{
+            localMedia?.getAudioTracks().forEach((track)=>{
+                track.enabled = isMicOn
+                peerConnectionRef.current!.addTrack(track, localMedia)
+            })
+
+            localMedia?.getVideoTracks().forEach((track)=>{
+                track.enabled = isCameraOn
                 peerConnectionRef.current!.addTrack(track, localMedia)
             })
 
@@ -213,95 +222,113 @@ export default function ChatRoom({socket, isConnected, roomCode}){
 
     return (
         <>
-        <Toaster/>
-        <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.12),_transparent_35%),linear-gradient(135deg,_#020617_0%,_#111827_45%,_#0f172a_100%)] px-4 py-6 text-white sm:px-6 lg:px-8">
-            <div className="mx-auto flex max-w-6xl flex-col rounded-[28px] border border-slate-700/70 bg-slate-950/80 p-4 shadow-2xl shadow-cyan-950/30 backdrop-blur-xl sm:p-6 lg:p-8">
-                <div className="flex flex-col gap-3 rounded-3xl border border-slate-800 bg-slate-900/70 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
-                    <div>
-                        <div className="flex items-center gap-2 text-2xl font-semibold sm:text-3xl">
-                            <ChatDoubleIcon/> Real Time Chat
+            <Toaster />
+            <div className="min-h-screen w-screen bg-slate-950 text-slate-100">
+                <div className="mx-auto flex min-h-screen max-w-[1700px] flex-col px-4 py-5 transition-all duration-500">
+                    <div className="flex flex-1 flex-col gap-5 transition-all duration-500 xl:flex-row xl:items-stretch xl:gap-6">
+                        <div className={`flex min-h-[calc(100vh-180px)] flex-1 flex-col gap-5 transition-all duration-500 ${isChatOpen ? 'xl:basis-[calc(100%-420px)]' : ''}`}>
+                            <div className="grid flex-1 gap-5 lg:grid-cols-2">
+                                <div
+                                    className="group relative overflow-hidden rounded-[32px] border border-slate-700/70 bg-slate-900/70 shadow-[0_30px_90px_-60px_rgba(15,23,42,0.9)] transition-all duration-500"
+                                >
+                                    <div className="absolute inset-0 flex items-center justify-center z-10">
+                                        {!localStream && <ProfileIcon/>}
+                                    </div>
+                                    <video ref={localStreamRef} muted={true} autoPlay playsInline className="h-full w-full min-h-[340px] object-cover" />
+                                </div>
+
+                                <div className="group relative overflow-hidden rounded-[32px] border border-slate-700/70 bg-slate-900/70 shadow-[0_30px_90px_-60px_rgba(15,23,42,0.9)] transition-all duration-500">
+                                    <div className="absolute inset-0 flex items-center justify-center z-10">
+                                        {!remoteStream && <ProfileIcon/>}
+                                    </div>
+                                    <video ref={remoteStreamRef} muted={false} autoPlay playsInline className="h-full w-full min-h-[340px] object-cover" />
+                                </div>
+                            </div>
                         </div>
-                        <div className="mt-2 text-sm text-slate-400 sm:text-base">
-                            Temporary room that expires after both users exit
+
+                        <div className={`relative flex shrink-0 transition-[width,opacity] duration-500 ${isChatOpen ? 'w-full max-w-[420px] opacity-100' : 'w-0 opacity-0'}`}>
+                            <aside className="flex h-full w-full flex-col overflow-hidden rounded-[32px] border border-slate-700/70 bg-slate-900/80 shadow-[0_30px_90px_-60px_rgba(15,23,42,0.9)] backdrop-blur-xl transition-all duration-500">
+                                <div className="border-b border-slate-700/60 px-5 py-4">
+                                    <h2 className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-300">Chat</h2>
+                                </div>
+                                <div className="flex-1 flex flex-col space-y-3 overflow-y-auto px-5 py-4 justify-end">
+                                    {message.length ? message.map((x, index) => (
+                                        <ChatMessage key={index} message={x.chat} isOwner={x.isOwner} />
+                                    )) : (
+                                        <div className="flex h-full items-center justify-center rounded-3xl border border-dashed border-slate-700/50 bg-slate-950/60 p-6 text-sm text-slate-500">
+                                            No messages yet.
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="border-t border-slate-700/60 px-5 py-4">
+                                    <div className="flex items-center gap-3 rounded-3xl border border-slate-700/70 bg-slate-950/80 px-3 py-3">
+                                        <input
+                                            id="chat"
+                                            type="text"
+                                            ref={chatRef}
+                                            placeholder="Type a message..."
+                                            className="flex-1 bg-transparent text-sm text-white outline-none placeholder:text-slate-500"
+                                        />
+                                        <button
+                                            onClick={() => {
+                                                if(chatRef.current?.value){
+                                                    socket.current?.send(JSON.stringify({
+                                                        type: "chat",
+                                                        RoomId: roomCode,
+                                                        message: chatRef.current?.value,
+                                                        isOwner: false
+                                                    }))
+                                                    chatRef.current.value = ""
+                                                } else {
+                                                    toast.error("Message cannot be empty!")
+                                                }
+                                            }}
+                                            className="rounded-2xl bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400 cursor-pointer"
+                                        >
+                                            Send
+                                        </button>
+                                    </div>
+                                </div>
+                            </aside>
                         </div>
                     </div>
                 </div>
 
-                <div className="mt-5 rounded-3xl border border-slate-800 bg-slate-900/70 p-4 sm:p-5">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div className="rounded-2xl border border-slate-700 bg-slate-950/80 px-4 py-3 text-sm text-slate-300">
-                            {`Room Code: ${roomCode}`}
-                        </div>
-                        <div className="flex mr-5 cursor" onClick={()=>{
-                            setIsCalling(!isCalling)
-                        }}>
-                            {isCalling ? <VideoIcon/> : <VideoCancel/>}
-                        </div>
-                    </div>
-
-                    <div className="mt-5 grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
-                        <div className="rounded-3xl border border-slate-800 bg-slate-950/60 p-3 sm:p-4">
-                            <div className="mb-3 flex items-center justify-between">
-                                <h3 className="text-lg font-semibold text-white">Video call</h3>
-                            </div>
-                            <div className="grid gap-3">
-                                <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/70">
-                                    <div className="aspect-video bg-gradient-to-br from-slate-800 via-slate-900 to-black">
-                                        {localStream ? (
-                                            <video ref={localStreamRef} autoPlay muted playsInline className="h-full w-full object-cover" />
-                                        ) : (
-                                            <div className="flex h-full items-center justify-center text-sm text-slate-500">
-                                                Camera preview will appear here once access is granted.
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/70">
-                                    <div className="aspect-video bg-gradient-to-br from-slate-800 via-slate-900 to-black">
-                                        {remoteStream ? (
-                                            <video ref={remoteStreamRef} autoPlay playsInline className="h-full w-full object-cover" />
-                                        ) : (
-                                            <div className="flex h-full items-center justify-center text-sm text-slate-500">
-                                                Your peer video will show up once the WebRTC connection is established.
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="flex min-h-[420px] flex-col rounded-3xl border border-slate-800 bg-slate-900/70 p-4 sm:p-5">
-                            <div className="mb-4 flex items-center justify-between">
-                                <h3 className="text-lg font-semibold text-white">Chat</h3>
-                            </div>
-                            <div className="flex flex-1 flex-col gap-3 overflow-y-auto rounded-2xl border border-slate-800 bg-slate-950/70 p-3 [scrollbar-width:none] [-ms-overflow-style:none]">
-                                {message.map((x, index) => {
-                                    return <ChatMessage key={index} message={x.chat} isOwner={x.isOwner} />
-                                })}
-                            </div>
-                            <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-                                <input type="text" ref={chatRef} placeholder="Type a message..." className="flex-1 rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500"/>
-                                <div onClick={()=>{
-                                    if(chatRef.current?.value){
-                                        socket.current?.send(JSON.stringify({
-                                        "type": "chat",
-                                        "RoomId": roomCode,
-                                        "message": chatRef.current?.value,
-                                        "isOwner": false
-                                        }))
-                                        chatRef.current.value = ""
-                                    } else{
-                                        toast.error("Message cannot be empty!")
-                                    }
-                                }}>
-                                    <Button text="Send" size="sm"/>
-                                </div>
-                            </div>
-                        </div>
+                <div className="pointer-events-none fixed inset-x-0 bottom-6 z-20 flex justify-center px-4">
+                    <div className="pointer-events-auto flex items-center gap-3 rounded-full border border-slate-700/70 bg-slate-950/90 px-4 py-3 shadow-2xl shadow-slate-950/40 backdrop-blur-xl transition-all duration-500">
+                        <button
+                            onClick={() => {
+                                if(!isCalling){
+                                    setIsCalling(true)
+                                }
+                                setIsMicOn(prev => !prev)
+                            }}
+                            className={`inline-flex items-center justify-center rounded-full border px-3 py-3 transition ${isMicOn ? 'border-cyan-500 bg-cyan-500/20 text-white' : 'border-slate-700 bg-slate-900 text-slate-400'}`}
+                        >
+                            {isMicOn ? <MicIcon/> : <MicOff/>}
+                        </button>
+                        <button
+                            onClick={() => {
+                                if(!isCalling){
+                                    setIsCameraOn(true)
+                                    setIsCalling(true)
+                                } else {
+                                    setIsCameraOn(prev => !prev)
+                                }
+                            }}
+                            className={`inline-flex items-center justify-center rounded-full border px-3 py-3 transition ${isCameraOn ? 'border-cyan-500 bg-cyan-500/20 text-white' : 'border-slate-700 bg-slate-900 text-slate-400'}`}
+                        >
+                            {isCameraOn ? <VideoIcon/> : <VideoCancel/>}
+                        </button>
+                        <button
+                            onClick={() => setIsChatOpen(prev => !prev)}
+                            className={`inline-flex items-center justify-center rounded-full border px-3 py-3 transition ${isChatOpen ? 'border-cyan-500 bg-cyan-500/20 text-white' : 'border-slate-700 bg-slate-900 text-slate-400'}`}
+                        >
+                            <ChatDoubleIcon />
+                        </button>
                     </div>
                 </div>
             </div>
-        </div>
         </>
     )
 }
