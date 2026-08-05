@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import Button from "../components/Button";
-import ChatDoubleIcon from "../icons/ChatDoubleIcon";
 import ChatMessage from "../components/ChatMessage";
 import toast, {Toaster} from "react-hot-toast";
 import VideoIcon from "../icons/VideoIcon";
 import VideoCancel from "../icons/VideoCancel";
+import MicIcon from "../icons/MicIcon";
+import MicOff from "../icons/MicOffIcon";
+import ProfileIcon from "../icons/ProfileIcon";
+import ChatDoubleIcon from "../icons/ChatDoubleIcon";
 
 interface chatProp {
     chat: string,
