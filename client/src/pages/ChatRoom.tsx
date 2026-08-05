@@ -220,11 +220,28 @@ export default function ChatRoom({socket, isConnected, roomCode}){
         
     }, [isConnected])
 
+    const copyRoomCode = async () => {
+        try {
+            await navigator.clipboard.writeText(roomCode)
+            toast.success("Room code copied")
+        } catch (error) {
+            toast.error("Unable to copy room code")
+        }
+    }
+
     return (
         <>
             <Toaster />
             <div className="min-h-screen w-screen bg-slate-950 text-slate-100">
                 <div className="mx-auto flex min-h-screen max-w-[1700px] flex-col px-4 py-5 transition-all duration-500">
+                    <div className="mb-4 flex items-center justify-center sm:justify-start">
+                        <button
+                            onClick={copyRoomCode}
+                            className="rounded-full border border-slate-700/70 bg-slate-900/80 px-4 py-2 text-sm font-semibold text-slate-100 transition hover:border-cyan-500 hover:text-cyan-300"
+                        >
+                            Room code: {roomCode}
+                        </button>
+                    </div>
                     <div className="flex flex-1 flex-col gap-5 transition-all duration-500 xl:flex-row xl:items-stretch xl:gap-6">
                         <div className={`flex min-h-[calc(100vh-180px)] flex-1 flex-col gap-5 transition-all duration-500 ${isChatOpen ? 'xl:basis-[calc(100%-420px)]' : ''}`}>
                             <div className="grid flex-1 gap-5 lg:grid-cols-2">
