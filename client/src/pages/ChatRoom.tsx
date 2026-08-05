@@ -74,6 +74,45 @@ export default function ChatRoom({socket, isConnected, roomCode}){
     }, [localStream])
 
     useEffect(()=>{
+        if(!localStream) return
+
+        localStream.getAudioTracks().forEach((track)=>{
+            track.enabled = isMicOn
+        })
+    }, [isMicOn, localStream])
+
+    useEffect(()=>{
+        if(!localStream) return
+
+        const videoTracks = localStream.getVideoTracks()
+        if(isCameraOn){
+            if(videoTracks.length === 0){
+                const addVideoTrack = async()=>{
+                    try {
+                        const videoStream = await navigator.mediaDevices.getUserMedia({ video: true })
+                        const [videoTrack] = videoStream.getVideoTracks()
+                        if(videoTrack){
+                            localStream.addTrack(videoTrack)
+                            peerConnectionRef.current?.addTrack(videoTrack, localStream)
+                        }
+                    } catch (error) {
+                        console.error("Unable to access camera:", error)
+                    }
+                }
+                addVideoTrack()
+            } else {
+                videoTracks.forEach((track)=>{
+                    track.enabled = true
+                })
+            }
+        } else {
+            videoTracks.forEach((track)=>{
+                track.enabled = false
+            })
+        }
+    }, [isCameraOn, localStream])
+
+    useEffect(()=>{
 
         const createOffer = async()=>{
             const offer = await peerConnectionRef.current?.createOffer()
